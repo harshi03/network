@@ -24,7 +24,8 @@ This is a simple REST Web Service which allow:
   * Login a user
   * List a user details
   * Delete a specific message by its id
-  * [Postman]: https://documenter.getpostman.com/collection/view/1588907-4f9504cf-f153-e7d2-2bd6-5134643715c8
+  * <a href="https://documenter.getpostman.com/collection/view/1588907-4f9504cf-f153-e7d2-2bd6-5134643715c8" target="_blank">Postman</a>
+
 
 <a name="started"></a>
 ## :traffic_light: Getting Started
