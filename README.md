@@ -1,5 +1,5 @@
 <div align="center">
-	<h1> REST Api with Slim PHP </h1>
+	<h1> REST Api with Slim PHP </h1>	
 </div>
 
 <div align="center">
@@ -24,6 +24,7 @@ This is a simple REST Web Service which allow:
   * Login a user
   * List a user details
   * Delete a specific message by its id
+  * [Postman]: https://documenter.getpostman.com/collection/view/1588907-4f9504cf-f153-e7d2-2bd6-5134643715c8
 
 <a name="started"></a>
 ## :traffic_light: Getting Started
@@ -289,7 +290,7 @@ $ php composer.phar install
   * XAMPP ([XAMPP for Windows 5.6.32](https://www.apachefriends.org/download.html))
   * ATOM ([ATOM](https://atom.io/))
   * COMPOSER ([COMPOSER](https://getcomposer.org/))
-  * Postman Extension for Chrome ([Postman]
+  * Postman Extension for Chrome [Postman]
 
 <a name="test"></a>
 ## :100: Running the tests
