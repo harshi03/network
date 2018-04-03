@@ -17,13 +17,12 @@
 	</a>
 </div>
 
-This API works with the same concept of social network of [Fav Quote](http://fav-quote.byethost17.com).
 
 This is a simple REST Web Service which allow:
 
-  * Post short text messages of no more than 120 characters
-  * Bring a list with the latest published messages
-  * Search for messages by your text
+  * Register a user
+  * Login a user
+  * List a user details
   * Delete a specific message by its id
 
 <a name="started"></a>
@@ -34,7 +33,7 @@ This page will help you get started with this API.
 <a name="requirements"></a>
 ### Requirements
 
-  * PHP 5.6
+  * PHP 7.1
   * MySQL or MariaDB
   * Apache Server
 
@@ -46,86 +45,184 @@ This page will help you get started with this API.
 Run the following SQL script
 
 ```SQL
--- -----------------------------------------------------
--- Schema NETWORK
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `NETWORK` DEFAULT CHARACTER SET utf8 ;
-USE `NETWORK` ;
+-- --------------------------------------------------------
+-- Database: `network`
+-- --------------------------------------------------------
+CREATE DATABASE IF NOT EXISTS `network` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `network`;
 
--- -----------------------------------------------------
--- Table `NETWORK`.`COUNTRIES`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `NETWORK`.`COUNTRIES` (
-  `ID_COUNTRY` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `ISO` VARCHAR(2) NOT NULL,
-  `COUNTRY` VARCHAR(80) NOT NULL,
-  PRIMARY KEY (`ID_COUNTRY`))
-ENGINE = InnoDB;
+-- --------------------------------------------------------
+-- Table structure for table `codes`
+-- --------------------------------------------------------
+CREATE TABLE `codes` (
+  `id_code` int(10) UNSIGNED NOT NULL,
+  `type` enum('VIP','VVIP') NOT NULL,
+  `value` varchar(10) NOT NULL,
+  `created_at` date NOT NULL,
+  `updated_at` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- --------------------------------------------------------
+-- Table structure for table `districts`
+-- --------------------------------------------------------
+CREATE TABLE `districts` (
+  `id_district` int(10) UNSIGNED NOT NULL,
+  `iso` varchar(2) NOT NULL,
+  `district` varchar(80) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- -----------------------------------------------------
--- Table `NETWORK`.`USERS`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `NETWORK`.`USERS` (
-  `ID_USER` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `GUID` VARCHAR(20) NOT NULL,
-  `USERNAME` VARCHAR(20) NOT NULL,
-  `PASSWORD` VARCHAR(255) NOT NULL,
-  `CREATED_AT` DATE NOT NULL,
-  `ID_COUNTRY` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`ID_USER`),
-  UNIQUE INDEX `ID_USER_UNIQUE` (`ID_USER` ASC),
-  UNIQUE INDEX `USER_UNIQUE` (`USERNAME` ASC),
-  UNIQUE INDEX `GUID_UNIQUE` (`GUID` ASC),
-  INDEX `fk_USERS_COUNTRIES1_idx` (`ID_COUNTRY` ASC),
-  CONSTRAINT `fk_USERS_COUNTRIES1`
-    FOREIGN KEY (`ID_COUNTRY`)
-    REFERENCES `NETWORK`.`COUNTRIES` (`ID_COUNTRY`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+-- --------------------------------------------------------
+-- Table structure for table `users`
+-- --------------------------------------------------------
+CREATE TABLE `users` (
+  `id_user` int(10) UNSIGNED NOT NULL,
+  `guid` varchar(20) NOT NULL,
+  `username` varchar(20) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `created_at` date NOT NULL,
+  `id_district` int(10) UNSIGNED NOT NULL,
+  `name` varchar(20) NOT NULL,
+  `mobile` text NOT NULL,
+  `email` varchar(20) NOT NULL,
+  `age` int(10) NOT NULL,
+  `gender` enum('Male','Female') NOT NULL DEFAULT 'Male',
+  `pan_card` varchar(20) NOT NULL,
+  `total_vehicle` int(10) NOT NULL,
+  `total_male` int(10) NOT NULL,
+  `total_female` int(10) NOT NULL,
+  `type` varchar(10) NOT NULL,
+  `updated_at` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- --------------------------------------------------------
+-- Table structure for table `user_codes`
+-- --------------------------------------------------------
+CREATE TABLE `user_codes` (
+  `id_user_code` int(10) UNSIGNED NOT NULL,
+  `id_code` int(10) UNSIGNED NOT NULL,
+  `id_user` int(10) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- -----------------------------------------------------
--- Table `NETWORK`.`QUOTES`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `NETWORK`.`QUOTES` (
-  `ID_QUOTE` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `QUOTE` VARCHAR(120) NOT NULL,
-  `POST_DATE` DATE NOT NULL,
-  `POST_TIME` TIME NOT NULL,
-  `LIKES` INT UNSIGNED NOT NULL DEFAULT 0,
-  `ID_USER` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`ID_QUOTE`),
-  UNIQUE INDEX `ID_QUOTE_UNIQUE` (`ID_QUOTE` ASC),
-  INDEX `fk_QUOTES_USERS_idx` (`ID_USER` ASC),
-  CONSTRAINT `fk_QUOTES_USERS`
-    FOREIGN KEY (`ID_USER`)
-    REFERENCES `NETWORK`.`USERS` (`ID_USER`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+-- --------------------------------------------------------
+-- Table structure for table `user_vehicles`
+-- --------------------------------------------------------
+CREATE TABLE `user_vehicles` (
+  `id_user_vehicle` int(10) UNSIGNED NOT NULL,
+  `id_vehicle` int(10) UNSIGNED NOT NULL,
+  `id_user` int(10) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- --------------------------------------------------------
+-- Table structure for table `vehicles`
+-- --------------------------------------------------------
+CREATE TABLE `vehicles` (
+  `id_vehicle` int(10) UNSIGNED NOT NULL,
+  `name` varchar(80) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- -----------------------------------------------------
--- Table `NETWORK`.`LIKES`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `NETWORK`.`LIKES` (
-  `ID_USER` INT UNSIGNED NOT NULL,
-  `ID_QUOTE` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`ID_USER`, `ID_QUOTE`),
-  INDEX `fk_LIKES_QUOTES1_idx` (`ID_QUOTE` ASC),
-  CONSTRAINT `fk_LIKES_USERS1`
-    FOREIGN KEY (`ID_USER`)
-    REFERENCES `NETWORK`.`USERS` (`ID_USER`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_LIKES_QUOTES1`
-    FOREIGN KEY (`ID_QUOTE`)
-    REFERENCES `NETWORK`.`QUOTES` (`ID_QUOTE`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+-- --------------------------------------------------------
+-- Indexes for table `codes`
+-- --------------------------------------------------------
+ALTER TABLE `codes`
+  ADD PRIMARY KEY (`id_code`),
+  ADD UNIQUE KEY `value` (`value`),
+  ADD KEY `type` (`type`);
+
+-- --------------------------------------------------------
+-- Indexes for table `districts`
+-- --------------------------------------------------------
+ALTER TABLE `districts`
+  ADD PRIMARY KEY (`id_district`);
+
+-- --------------------------------------------------------
+-- Indexes for table `users`
+-- --------------------------------------------------------
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id_user`),
+  ADD UNIQUE KEY `id_user_UNIQUE` (`id_user`),
+  ADD UNIQUE KEY `user_UNIQUE` (`username`),
+  ADD UNIQUE KEY `guid_UNIQUE` (`guid`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `fk_users_countries1_idx` (`id_district`);
+
+-- --------------------------------------------------------
+-- Indexes for table `user_codes`
+-- --------------------------------------------------------
+ALTER TABLE `user_codes`
+  ADD PRIMARY KEY (`id_user_code`),
+  ADD KEY `fk_users_codes1` (`id_code`) USING BTREE,
+  ADD KEY `fk_users_users1` (`id_user`) USING BTREE;
+
+-- --------------------------------------------------------
+-- Indexes for table `user_vehicles`
+-- --------------------------------------------------------
+ALTER TABLE `user_vehicles`
+  ADD PRIMARY KEY (`id_user_vehicle`),
+  ADD KEY `id_vehicle` (`id_vehicle`),
+  ADD KEY `id_user` (`id_user`);
+
+-- --------------------------------------------------------
+-- Indexes for table `vehicles`
+-- --------------------------------------------------------
+ALTER TABLE `vehicles`
+  ADD PRIMARY KEY (`id_vehicle`);
+
+-- --------------------------------------------------------
+-- AUTO_INCREMENT for table `codes`
+-- --------------------------------------------------------
+ALTER TABLE `codes`
+  MODIFY `id_code` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+-- AUTO_INCREMENT for table `districts`
+-- --------------------------------------------------------
+ALTER TABLE `districts`
+  MODIFY `id_district` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+-- AUTO_INCREMENT for table `users`
+-- --------------------------------------------------------
+ALTER TABLE `users`
+  MODIFY `id_user` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+-- AUTO_INCREMENT for table `user_codes`
+-- --------------------------------------------------------
+ALTER TABLE `user_codes`
+  MODIFY `id_user_code` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+-- AUTO_INCREMENT for table `user_vehicles`
+-- --------------------------------------------------------
+ALTER TABLE `user_vehicles`
+  MODIFY `id_user_vehicle` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+-- AUTO_INCREMENT for table `vehicles`
+-- --------------------------------------------------------
+ALTER TABLE `vehicles`
+  MODIFY `id_vehicle` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+-- Constraints for table `users`
+-- --------------------------------------------------------
+ALTER TABLE `users`
+  ADD CONSTRAINT `fk_users_countries1` FOREIGN KEY (`id_district`) REFERENCES `districts` (`id_district`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- --------------------------------------------------------
+-- Constraints for table `user_codes`
+-- --------------------------------------------------------
+ALTER TABLE `user_codes`
+  ADD CONSTRAINT `user_codes_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `user_codes_ibfk_2` FOREIGN KEY (`id_code`) REFERENCES `codes` (`id_code`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- --------------------------------------------------------
+-- Constraints for table `user_vehicles`
+-- --------------------------------------------------------
+ALTER TABLE `user_vehicles`
+  ADD CONSTRAINT `user_vehicles_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `user_vehicles_ibfk_2` FOREIGN KEY (`id_vehicle`) REFERENCES `vehicles` (`id_vehicle`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
 ```
 
 #### Copy this project
@@ -182,7 +279,7 @@ $ php composer.phar install
 <div align="center">
 	<h3> Database Schema </h3>
 	<a href="#installation">
-		<img src="https://raw.githubusercontent.com/ManuelGil/Simple-Social-Network/master/docs/images/schema.png" alt="schema">
+		<img src="https://github.com/harshi03/network/blob/master/localhost%20%20%20localhost%20%20%20network%20%20%20phpMyAdmin%204%207%202.png?raw=true" alt="schema">
 	</a>
 </div>
 
@@ -192,7 +289,7 @@ $ php composer.phar install
   * XAMPP ([XAMPP for Windows 5.6.32](https://www.apachefriends.org/download.html))
   * ATOM ([ATOM](https://atom.io/))
   * COMPOSER ([COMPOSER](https://getcomposer.org/))
-  * RestEasy Extension for Chrome ([RestEasy](https://chrome.google.com/webstore/detail/resteasy/nojelkgnnpdmhpankkiikipkmhgafoch))
+  * Postman Extension for Chrome ([Postman]
 
 <a name="test"></a>
 ## :100: Running the tests
@@ -236,7 +333,7 @@ Put the parameters on a Query Parameter.
 			<td>
 				<ul>
 					<li>
-						PHP 5.6
+						PHP 7.1
 					</li>
 					<li>
 						MySQL or MariaDB 
@@ -247,86 +344,8 @@ Put the parameters on a Query Parameter.
 				</ul>
 			</td>
 		</tr>
-		<tr>
-			<td>
-				<strong>Changes:</strong>
-			</td>
-			<td>
-				<ul>
-					<li>
-						Add a new table in database to save likes
-					</li>
-					<li>
-						Add 3 methods (ping, register, likes)
-					</li>
-					<li>
-						Add logger with Monolog
-					</li>
-					<li>
-						Add JSON file for installation with composer
-					</li>
-				</ul>
-			</td>
-		</tr>
+		
 	</table>
-
-**1.0.0.1** (12/07/2017)
-
-  * <table border="0" cellpadding="4">
-		<tr>
-			<td>
-				<strong>Language:</strong>
-			</td>
-			<td>
-				PHP
-			</td>
-		</tr>
-		<tr>
-			<td><strong>
-				Requirements:
-			</strong></td>
-			<td>
-				<ul>
-					<li>
-						PHP 5.6
-					</li>
-					<li>
-						MySQL or MariaDB 
-					</li>
-					<li>
-						Apache Server
-					</li>
-				</ul>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<strong>Changes:</strong>
-			</td>
-			<td>
-				<ul>
-					<li>
-						Add Authentication with <a href="https://github.com/tuupola/slim-jwt-auth">PSR-7 JWT Authentication Middleware</a>
-					</li>
-				</ul>
-			</td>
-		</tr>
-	</table>
-
-<a name="Donate"></a>
-## :gift: Donate!
-
-If you want to help me to continue this project, you might donate via PayPal.
-
-<a href="https://paypal.me/ManuelFGil"><img src="https://www.paypalobjects.com/webstatic/en_US/i/btn/png/btn_donate_92x26.png" alt="Donate via PayPal"></a>
-
-<a name="authors"></a>
-## :eyeglasses: Authors
-
-  * **Manuel Gil** - *Initial work* - [ManuelGil](https://github.com/ManuelGil) 
-
-See also the list of [contributors](https://github.com/ManuelGil/REST-Api-with-Slim-PHP/contributors)
- who participated in this project.
 
 <a name="license"></a>
 ## :memo: License
