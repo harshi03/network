@@ -352,3 +352,7 @@ Put the parameters on a Query Parameter.
 
 This API is licensed under the MIT License - see the
  [MIT License](https://opensource.org/licenses/MIT) for details.
+ 
+ ## :response: Response Format
+ 
+ This API is strictly following https://github.com/adnan-kamili/rest-api-response-format/blob/master/README.md
