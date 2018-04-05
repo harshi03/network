@@ -101,7 +101,6 @@
          'email' => $request->getParam("email"),
          'password' => password_hash($request->getParam("password"), PASSWORD_DEFAULT),
          'id_district' => (int) $request->getParam("district"),
-         'id_vehicle' => (int) $request->getParam("vehicle"),
          'age' => $request->getParam("age"),
          'gender' => $request->getParam("gender"),
          'pan_card' => $request->getParam("pan_card"),
