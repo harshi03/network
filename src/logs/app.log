@@ -1,1 +1,2 @@
-[2018-04-03 15:04:48] api.ERROR: DataBase Error.<br/>SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'harsirvat@gmail.com' for key 'user_UNIQUE' (SQL: insert into `users` (`guid`, `name`, `mobile`, `username`, `email`, `password`, `id_district`, `id_vehicle`, `age`, `gender`, `pan_card`, `total_vehicle`, `total_male`, `total_female`, `type`, `updated_at`, `created_at`) values (5ac3980fd438a, HarshiSrivastava, 988745612, harsirvat@gmail.com, harsirvat@gmail.com, $2y$10$G0UJbVesIbSTrQcGk.g1M.XUaExcbkVXX9GdbL/QgCdE1RM6T8FHO, 1, 1, 23, Male, 78787878, 8, 8, 6, General, 2018-04-03 15:04:47, 2018-04-03 15:04:47)) [] []
+
+
