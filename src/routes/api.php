@@ -121,9 +121,7 @@
          return $response;
       }
 
-      try {
-         
-         
+      try {        
 
          $result = User::create($newUser);
 
@@ -170,7 +168,13 @@
          // $stmt->bindParam(":user", $user);
          // $stmt->execute();
          // $query = $stmt->fetchObject();
-         $user = User::where('username', $user)->first();
+         $user = User::where('username', $user)->orWhere('mobile', $user)->first();
+
+         // if($user) {
+
+         // } else {
+         //    $user = User::where('mobile', $user)->first();
+         // }
 
          // If user exist
          if ($user) {
