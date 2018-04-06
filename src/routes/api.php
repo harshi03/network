@@ -124,6 +124,29 @@
       try {        
 
          $result = User::create($newUser);
+         $mobile = '91' . $request->getParam("mobile");
+
+         // Account details
+         $apiKey = urlencode('qh6V1C/XaDs-YMIw6wGFvCV45uJKz0DAFoij5tiVLO');
+   
+         // Message details
+         $numbers = array($mobile);
+         $sender = urlencode('TXTLCL');
+         $message = rawurlencode('Your account has been successfully created.');
+ 
+         // Prepare data for POST request
+         $data2 = array('apikey' => $apiKey, 'numbers' => $mobile, "sender" => $sender, "message" => $message);
+ 
+         // Send the POST request with cURL
+         $ch = curl_init('https://api.textlocal.in/send/');
+         curl_setopt($ch, CURLOPT_POST, true);
+         curl_setopt($ch, CURLOPT_POSTFIELDS, $data2);
+         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+         $response2 = curl_exec($ch);
+         curl_close($ch);
+   
+         // Process your response here
+         $data['mobile'] = $response2;
 
          // If user has been registered
          if ($result) {
@@ -154,81 +177,71 @@
       * @param string $pass - password
       */
       $app->get('/login', function (Request $request, Response $response) {
-      // Gets username and password
+         // Gets username and password
          $user = $request->getParam("email");
          $pass = $request->getParam("password");
 
          // Gets the database connection
-         // $conn = PDOConnection::getConnection();
 
          try {
             // Gets the user into the database
-         //    $sql = "SELECT * FROM users WHERE username=:user";
-         //     $stmt = $conn->prepare($sql);
-         // $stmt->bindParam(":user", $user);
-         // $stmt->execute();
-         // $query = $stmt->fetchObject();
-         $user = User::where('username', $user)->orWhere('mobile', $user)->first();
+            $user = User::where('username', $user)->orWhere('mobile', $user)->first();
 
-         // if($user) {
-
-         // } else {
-         //    $user = User::where('mobile', $user)->first();
-         // }
-
-         // If user exist
-         if ($user) {
-            // If password is correct
-            if (password_verify($pass, $user->password)) {
-            // Create a new resource
-            $data['user'] = $user;
-            $data['token'] = JWTAuth::getToken($user->id_user, $user->username);
-          } else {
-               // Password wrong
-            $data['status'] = "Error: The password you have entered is wrong.";
+            // If user exist
+            if ($user) {
+               // If password is correct
+               if (password_verify($pass, $user->password)) {
+                  // Create a new resource
+                  $data['user'] = $user;
+                  $data['token'] = JWTAuth::getToken($user->id_user, $user->username);
+               } else {
+                  // Password wrong
+                  $data['status'] = "Error: The password you have entered is wrong.";
+               }
+            } else {
+               // Username wrong
+               $data['status'] = "Error: The user specified does not exist.";
             }
-         } else {
-            // Username wrong
-          $data['status'] = "Error: The user specified does not exist.";
+
+            // Return the result
+            $response = $response->withHeader('Content-Type','application/json');
+            $response = $response->withStatus(200);
+            $response = $response->withJson($data);
+            return $response;
+         } catch (PDOException $e) {
+            $this['logger']->error("DataBase Error.<br/>" . $e->getMessage());
+         } catch (Exception $e) {
+            $this['logger']->error("General Error.<br/>" . $e->getMessage());
+         } finally {
+            // Destroy the database connection
+            $conn = null;
          }
+      });
 
-        // Return the result
-        $response = $response->withHeader('Content-Type','application/json');
-        $response = $response->withStatus(200);
-        $response = $response->withJson($data);
-        return $response;
-      } catch (PDOException $e) {
-        $this['logger']->error("DataBase Error.<br/>" . $e->getMessage());
-      } catch (Exception $e) {
-        $this['logger']->error("General Error.<br/>" . $e->getMessage());
-      } finally {
-        // Destroy the database connection
-        $conn = null;
-      }
-    });
+      /**
+       * This method cheks the token.
+       */
+      $app->get('/verify', function (Request $request, Response $response) {
+         // Gets the token of the header.
+         $token = str_replace('Bearer ', '', $request->getServerParams()['HTTP_AUTHORIZATION']);
+         
+         // Verify the token.
+         $result = JWTAuth::verifyToken($token);
+         
+         // Return the result
+         $data['status'] = $result;
+         $response = $response->withHeader('Content-Type','application/json');
+         $response = $response->withStatus(200);
+         $response = $response->withJson($data);
+         return $response;
+      });
 
-    /**
-     * This method cheks the token.
-     */
-    $app->get('/verify', function (Request $request, Response $response) {
-      // Gets the token of the header.
-      $token = str_replace('Bearer ', '', $request->getServerParams()['HTTP_AUTHORIZATION']);
-      // Verify the token.
-      $result = JWTAuth::verifyToken($token);
-      // Return the result
-      $data['status'] = $result;
-      $response = $response->withHeader('Content-Type','application/json');
-      $response = $response->withStatus(200);
-      $response = $response->withJson($data);
-      return $response;
-    });
-
-    /**
-     * This method publish short text messages of no more than 120 characters
-     * @param string $quote - The text of post
-     * @param int $id - The user id
-     */
-    $app->post('/vehicle/create', function (Request $request, Response $response) {
+      /**
+      * This method publish short text messages of no more than 120 characters
+      * @param string $quote - The text of post
+      * @param int $id - The user id
+      */
+      $app->post('/vehicle/create', function (Request $request, Response $response) {
          // Gets quote and user id
          $id = $request->getParam('id');
          $vehicle = $request->getParam('vehicle');
