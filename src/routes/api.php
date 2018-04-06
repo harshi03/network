@@ -44,7 +44,8 @@
                "/webresources/mobile_app/signature/create",
                "/webresources/mobile_app/vehicle/create",
                "/webresources/mobile_app/code/create",
-               "/webresources/mobile_app/code/list"
+               "/webresources/mobile_app/code/list",
+               "/webresources/mobile_app/code/allocate"
             ]
          ])
       ]
@@ -410,26 +411,78 @@
       $app->get('/code/list', function (Request $request, Response $response) {
          
          // Gets quote and user id
-         $type = $request->getParam('type');
-         $status = $request->getParam('status');
+         $type = array($request->getParam('type'));
+         $status = array($request->getParam('status'));
 
-         if($status == 'all' || $status == 'All') {
+         if($status[0] == 'all' || $status[0] == 'All' || $status[0] == 'ALL') {
             $status = array('New', 'Used');
          }
 
-         if($type == 'all' || $type == 'All') {
-            $type = array('VVIP', 'VIP');
+         if($type[0] == 'all' || $type[0] == 'All' || $type[0] == 'ALL') {
+            $type = array('VIP', 'VVIP');
          }
          
          // Gets the database connection
          try {
             // Gets the user into the database
-            $result = Code::where([
-               'type' => $type,
-               'status' => $status
-            ])->get();
+            $result = Code::whereIn('type', $type)->whereIn('status', $status)->get();
 
             $data['status'] = $result;
+                   
+            // Return the result
+            $response = $response->withHeader('Content-Type','application/json');
+            $response = $response->withStatus(200);
+            $response = $response->withJson($data);
+            
+            return $response;
+
+         } catch (PDOException $e) {
+            $this['logger']->error("DataBase Error.<br/>" . $e->getMessage());
+         } catch (Exception $e) {
+            $this['logger']->error("General Error.<br/>" . $e->getMessage());
+         } finally {
+            // Destroy the database connection
+            // $conn = null;
+         }
+      });
+
+      /**
+      * This method publish short text messages of no more than 120 characters
+      * @param string $quote - The text of post
+      * @param int $id - The user id
+      */
+      $app->get('/code/allocate', function (Request $request, Response $response) {
+         
+         // Gets quote and user id
+         $code = $request->getParam('code');
+         $id = $request->getParam('id');
+
+         // Gets the database connection
+         try {
+
+            // Gets the user into the database
+            $code = Code::where('value', $code)->first();
+         
+            // If user exist
+            if ($code && $code->status == 'New') {
+
+               $result = User::where('id_user', $id)->update(['type' => $code->type, 'code' => $code->value]);
+               Code::where('id_code', $code->id_code)->update(['status' => 'Used']);
+
+               $data['status'] = 'The code is allocated to specified user.';
+
+               if($result) {
+                  $data['status'] = 'The user is not exist in our database.';
+               }
+
+            } else {
+               // Username wrong
+               $data['status'] = "Error: The code specified does not exist or used.";
+            }
+            // Gets the user into the database
+            // $result = Code::whereIn('type', $type)->whereIn('status', $status)->get();
+
+            // $data['status'] = $result;
                    
             // Return the result
             $response = $response->withHeader('Content-Type','application/json');
