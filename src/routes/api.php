@@ -39,7 +39,9 @@
             "passthrough" => [
                "/webresources/mobile_app/ping",
                "/webresources/mobile_app/login",
-               "/webresources/mobile_app/register"
+               "/webresources/mobile_app/register",
+               "/webresources/mobile_app/signature/create",
+               "/webresources/mobile_app/vehicle/create"
             ]
          ])
       ]
@@ -168,7 +170,7 @@
         $this['logger']->error("General Error.<br/>" . $e->getMessage());
       } finally {
         // Destroy the database connection
-        $conn = null;
+        // $conn = null;
       }
    });
 
@@ -179,14 +181,14 @@
       */
       $app->get('/login', function (Request $request, Response $response) {
          // Gets username and password
-         $user = $request->getParam("email");
+         $email = $request->getParam("email");
          $pass = $request->getParam("password");
 
          // Gets the database connection
 
          try {
             // Gets the user into the database
-            $user = User::where('username', $user)->orWhere('mobile', $user)->first();
+            $user = User::where('username', $email)->orWhere('mobile', $email)->first();
 
             // If user exist
             if ($user) {
@@ -195,6 +197,9 @@
                   // Create a new resource
                   $data['user'] = $user;
                   $data['token'] = JWTAuth::getToken($user->id_user, $user->username);
+                  // Find out a user have for vehicle
+                  $vehicle = UserVehicle::where('id_user', $user->id_user)->get();
+                  $data['user']['vehicle'] = $vehicle;
                } else {
                   // Password wrong
                   $data['status'] = "Error: The password you have entered is wrong.";
@@ -266,7 +271,18 @@
                   'total_vehicle' => $count
                ]);
 
+               // Update User with new values of UserVehicle
+               $userVehicle = UserVehicle::where('id_user', $id);
+
+               User::where('id_user', $id)->update([
+                  'total_male' => $userVehicle->sum('total_male'),
+                  'total_female' => $userVehicle->sum('total_female'),
+                  'total_vehicle' => $userVehicle->sum('total_vehicle')
+               ]);
+
+               $data['message'] = "The user updated with the information.";
                $data['status'] = $result;
+
             } else {
                // Username wrong
                $data['status'] = "Error: The user specified does not exist.";
