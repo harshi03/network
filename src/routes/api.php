@@ -2,6 +2,7 @@
 
    use App\Models\User;
    use App\Models\UserVehicle;
+   use App\Models\Signature;
 
    use \Psr\Http\Message\ServerRequestInterface as Request;
    use \Psr\Http\Message\ResponseInterface as Response;
@@ -132,7 +133,7 @@
          // Message details
          $numbers = array($mobile);
          $sender = urlencode('TXTLCL');
-         $message = rawurlencode('Your account has been successfully created.');
+         $message = rawurlencode('Thanks for joining Vyasanmukt Uttar Pradesh abhiyan.Your account has been successfully created.Your registeration ID is '. $result->guid);
  
          // Prepare data for POST request
          $data2 = array('apikey' => $apiKey, 'numbers' => $mobile, "sender" => $sender, "message" => $message);
@@ -284,7 +285,64 @@
             $this['logger']->error("General Error.<br/>" . $e->getMessage());
          } finally {
             // Destroy the database connection
-            $conn = null;
+            // $conn = null;
+         }
+      });
+
+      /**
+      * This method publish short text messages of no more than 120 characters
+      * @param string $quote - The text of post
+      * @param int $id - The user id
+      */
+      $app->post('/signature/create', function (Request $request, Response $response) {
+         // Gets quote and user id
+         $id = $request->getParam('id');
+
+         $newSignature = array(
+            'id_district' => $request->getParam('district'),
+            'file_name' => $request->getParam('file_name'),
+            'from_' => $request->getParam('from'),
+            'to_' => $request->getParam('to'),
+            'total_sheet' => $request->getParam('sheet'),
+            'contact_name' => $request->getParam('name'),
+            'contact_mobile' => $request->getParam('mobile'),
+            'total_college' => $request->getParam('college'),
+            'total_student' => $request->getParam('student'),
+            'total_teacher' => $request->getParam('teacher'),
+            'total_general' => $request->getParam('general'),
+            'total_representative' => $request->getParam('representative'),
+            'total_exoffice' => $request->getParam('exoffice'));
+
+         // Gets the database connection
+         try {
+            // Gets the user into the database
+            $user = User::where('id_user', $id)->first();
+         
+            // If user exist
+            if ($user) {
+        
+               $result = Signature::create($newSignature);
+               $data['status'] = $result;
+
+            } else {
+               // Username wrong
+               $data['status'] = "Error: The user specified does not exist.";
+            }
+        
+            // Return the result
+            $response = $response->withHeader('Content-Type','application/json');
+            $response = $response->withStatus(200);
+            $response = $response->withJson($data);
+            
+            return $response;
+
+         } catch (PDOException $e) {
+            $this['logger']->error("DataBase Error.<br/>" . $e->getMessage());
+         } catch (Exception $e) {
+            $this['logger']->error("General Error.<br/>" . $e->getMessage());
+         } finally {
+            // Destroy the database connection
+            // $conn = null;
          }
       });
    });

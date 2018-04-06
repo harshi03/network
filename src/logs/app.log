@@ -1,1 +1,2 @@
 
+[2018-04-06 06:39:25] api.ERROR: DataBase Error.<br/>SQLSTATE[42S02]: Base table or view not found: 1146 Table 'network.signature' doesn't exist (SQL: insert into `signature` (`id_district`, `file_name`, `from_`, `to_`, `total_sheet`, `contact_name`, `contact_mobile`, `total_college`, `total_student`, `total_teacher`, `total_general`, `total_representative`, `total_exoffice`, `updated_at`, `created_at`) values (2, 23, 22, 1, 1, Anupam, 8989123456, 9, 8, 7, 6, 5, 4, 2018-04-06 06:39:25, 2018-04-06 06:39:25)) [] []
