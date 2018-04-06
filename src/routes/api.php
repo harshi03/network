@@ -314,11 +314,8 @@
       */
       $app->post('/signature/create', function (Request $request, Response $response) {
          // Gets quote and user id
-         $id = $request->getParam('id');
-
          $newSignature = array(
             'id_district' => $request->getParam('district'),
-            'file_name' => $request->getParam('file_name'),
             'from_' => $request->getParam('from'),
             'to_' => $request->getParam('to'),
             'total_sheet' => $request->getParam('sheet'),
@@ -334,19 +331,13 @@
          // Gets the database connection
          try {
             // Gets the user into the database
-            $user = User::where('id_user', $id)->first();
          
             // If user exist
-            if ($user) {
-        
+       
                $result = Signature::create($newSignature);
                $data['status'] = $result;
 
-            } else {
-               // Username wrong
-               $data['status'] = "Error: The user specified does not exist.";
-            }
-        
+                    
             // Return the result
             $response = $response->withHeader('Content-Type','application/json');
             $response = $response->withStatus(200);
@@ -469,10 +460,10 @@
                $result = User::where('id_user', $id)->update(['type' => $code->type, 'code' => $code->value]);
                Code::where('id_code', $code->id_code)->update(['status' => 'Used']);
 
-               $data['status'] = 'The code is allocated to specified user.';
+               $data['status'] = 'The user is not exist in our database.';
 
                if($result) {
-                  $data['status'] = 'The user is not exist in our database.';
+                  $data['status'] = 'The code is allocated to specified user.';
                }
 
             } else {
